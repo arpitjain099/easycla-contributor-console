@@ -253,10 +253,8 @@ export class ConfigureClaManagerModalComponent implements OnInit {
       this.message =
         'The initial CLA manager settings could not be assigned.</br>' +
         'Please click on Retry to allow platform more time to assign settings.</br>' +
-        'Otherwise you can file a <a href=""' +
-        AppSettings.TICKET_URL +
-        'target="_blank"><b>support ticket</b>.</a>' +
-        ' Once the support ticket is resolved, you will be able to proceed with the CLA.';
+        'Otherwise please contact support via the chat widget.' +
+        ' Once the issue is resolved, you will be able to proceed with the CLA.';
       this.openDialog(this.errorModal);
     }
   }

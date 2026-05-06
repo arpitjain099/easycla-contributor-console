@@ -12,6 +12,7 @@ import { CompanyModel, OrganizationModel } from 'src/app/core/models/organizatio
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { EmailValidator } from 'src/app/shared/validators/email-validator';
 import { AppSettings } from 'src/app/config/app-settings';
+import { IntercomService } from 'src/app/shared/services/intercom.service';
 import { CompanyAdminDesigneeModel, CompnayAdminListModel } from 'src/app/core/models/company-admin-designee';
 
 @Component({
@@ -36,7 +37,8 @@ export class IdentifyClaManagerModalComponent implements OnInit {
     private modalService: NgbModal,
     private claContributorService: ClaContributorService,
     private storageService: StorageService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private intercomService: IntercomService
   ) {
   }
 
@@ -80,7 +82,7 @@ export class IdentifyClaManagerModalComponent implements OnInit {
   }
 
   onClickSupporticket() {
-    window.open(AppSettings.SUPPORT_TICKET_LINK, '_blank');
+    this.intercomService.show();
   }
 
   addNewOrganization(data) {

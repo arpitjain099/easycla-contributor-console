@@ -16,6 +16,7 @@ export class LfxHeaderService {
     this.setUserInLFxHeader();
     this.setLinks();
     this.setCallBackUrl();
+    this.setSupportClickHandler();
   }
 
   setLinks() {
@@ -42,6 +43,18 @@ export class LfxHeaderService {
     if (lfHeaderEl) {
       lfHeaderEl.callbackurl = this.auth.auth0Options.callbackUrl;
     }
+  }
+
+  setSupportClickHandler(): void {
+    const lfHeaderEl: any = document.getElementById('lfx-header-v2');
+    if (!lfHeaderEl) {
+      return;
+    }
+    lfHeaderEl.onsupportclick = () => {
+      if (window.Intercom) {
+        window.Intercom('show');
+      }
+    };
   }
 
   setUserInLFxHeader(): void {

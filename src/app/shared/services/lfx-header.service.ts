@@ -16,7 +16,6 @@ export class LfxHeaderService {
     this.setUserInLFxHeader();
     this.setLinks();
     this.setCallBackUrl();
-    this.setSupportClickHandler();
   }
 
   setLinks() {
@@ -35,14 +34,10 @@ export class LfxHeaderService {
       },
     ];
     const element: any = document.getElementById('lfx-header-v2');
-    element.links = this.links;
-  }
-
-  setCallBackUrl() {
-    const lfHeaderEl: any = document.getElementById('lfx-header-v2');
-    if (lfHeaderEl) {
-      lfHeaderEl.callbackurl = this.auth.auth0Options.callbackUrl;
+    if (!element) {
+      return;
     }
+    element.links = this.links;
   }
 
   setSupportClickHandler(): void {
@@ -55,6 +50,13 @@ export class LfxHeaderService {
         window.Intercom('show');
       }
     };
+  }
+
+  setCallBackUrl() {
+    const lfHeaderEl: any = document.getElementById('lfx-header-v2');
+    if (lfHeaderEl) {
+      lfHeaderEl.callbackurl = this.auth.auth0Options.callbackUrl;
+    }
   }
 
   setUserInLFxHeader(): void {

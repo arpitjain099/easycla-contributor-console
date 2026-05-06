@@ -37,7 +37,6 @@ export class AppSettings {
     public static GITHUB_EMAIL_CONTENT = 'noreply.github.com';
     public static NEW_ORGANIZATIONS = 'newOrganizations';
     public static LEARN_MORE = 'https://docs.linuxfoundation.org/lfx/easycla/contributors';
-    public static TICKET_URL = 'https://jira.linuxfoundation.org/servicedesk/customer/portal/4/create/143';
     public static LFX_FOOTER = 'lfx-footer';
     public static LFX_HEADER = 'lfx-header-v2';
     public static PROJECT_CONSOLE_LINK_V2 = 'admin-v2-base';
@@ -48,7 +47,6 @@ export class AppSettings {
     public static GITHUB_DOMAIN = "github.com";
     public static GITLAB_DOMAIN = "gitlab.com";
     public static GITLAB = "Gitlab";
-    public static SUPPORT_TICKET_LINK = 'https://jira.linuxfoundation.org/plugins/servlet/theme/portal/4/create/143';
     public static LOGIN_ATTEMPT_COUNT = 'loginAttemptCount';
     public static MAX_LOGIN_ATTEMPTS = 3;
 }

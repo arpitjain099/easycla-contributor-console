@@ -1,11 +1,12 @@
 // Copyright The Linux Foundation and each contributor to CommunityBridge.
 // SPDX-License-Identifier: MIT
 
-import { Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AuthService } from './shared/services/auth.service';
 import { IntercomService } from './shared/services/intercom.service';
+import { LfxHeaderService } from './shared/services/lfx-header.service';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -13,7 +14,7 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnDestroy {
+export class AppComponent implements AfterViewInit, OnDestroy {
   title = 'easycla-contributor-console';
   hasExpanded: boolean;
   links: any[];
@@ -24,8 +25,13 @@ export class AppComponent implements OnDestroy {
   constructor(
     private auth: AuthService,
     private intercomService: IntercomService,
+    private lfxHeaderService: LfxHeaderService,
     private route: ActivatedRoute
   ) {}
+
+  ngAfterViewInit() {
+    this.lfxHeaderService.setSupportClickHandler();
+  }
 
   onToggled() {
     this.hasExpanded = !this.hasExpanded;

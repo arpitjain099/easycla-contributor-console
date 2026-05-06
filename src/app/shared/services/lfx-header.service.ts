@@ -35,7 +35,14 @@ export class LfxHeaderService {
     ];
     const element: any = document.getElementById('lfx-header-v2');
     element.links = this.links;
-    element.onsupportclick = () => {
+  }
+
+  setSupportClickHandler(): void {
+    const lfHeaderEl: any = document.getElementById('lfx-header-v2');
+    if (!lfHeaderEl) {
+      return;
+    }
+    lfHeaderEl.onsupportclick = () => {
       if (window.Intercom) {
         window.Intercom('show');
       }

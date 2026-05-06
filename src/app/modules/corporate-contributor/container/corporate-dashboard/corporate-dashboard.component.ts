@@ -22,7 +22,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ProjectModel } from 'src/app/core/models/project';
 import { AppSettings } from 'src/app/config/app-settings';
-import { IntercomService } from 'src/app/shared/services/intercom.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -70,8 +69,7 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
     private location: PlatformLocation,
     private storageService: StorageService,
     private formBuilder: FormBuilder,
-    private alertService: AlertService,
-    private intercomService: IntercomService
+    private alertService: AlertService
   ) {
     this.projectId = this.route.snapshot.paramMap.get('projectId');
     this.userId = this.route.snapshot.paramMap.get('userId');
@@ -194,7 +192,6 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
           this.message =
             `We're sorry, you are currently unable to acknowledge the Employee Contributor License Agreement (ECLA) for this organization.
              If you believe this may be an error, please contact EasyCLA Support via the chat widget.`;
-          this.intercomService.show();
           this.openWithDismiss(this.warningModal);
         }
         },
@@ -210,7 +207,6 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
             ' to get the Organization Administrator assigned. Once the Organization Administrator is assigned to ' +
             companyName +
             ' you will be able to proceed with the CLA.';
-          this.intercomService.show();
           this.openWithDismiss(this.warningModal);
         }
       );

@@ -21,7 +21,6 @@ import {
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { UserModel } from 'src/app/core/models/user';
 import { LoaderService } from 'src/app/shared/services/loader.service';
-import { IntercomService } from 'src/app/shared/services/intercom.service';
 
 @Component({
   selector: 'app-configure-cla-manager-modal',
@@ -47,8 +46,7 @@ export class ConfigureClaManagerModalComponent implements OnInit {
     private storageService: StorageService,
     private modalService: NgbModal,
     private alertService: AlertService,
-    private loaderService: LoaderService,
-    private intercomService: IntercomService
+    private loaderService: LoaderService
   ) {
     this.hasCLAManagerDesignee = false;
     this.showCloseBtnEmitter.emit(false);
@@ -257,7 +255,6 @@ export class ConfigureClaManagerModalComponent implements OnInit {
         'Please click on Retry to allow platform more time to assign settings.</br>' +
         'Otherwise please contact support via the chat widget.' +
         ' Once the issue is resolved, you will be able to proceed with the CLA.';
-      this.intercomService.show();
       this.openDialog(this.errorModal);
     }
   }

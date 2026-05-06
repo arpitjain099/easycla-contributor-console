@@ -9,6 +9,7 @@ import { ActiveSignatureModel } from 'src/app/core/models/active-signature';
 import { IndividualRequestSignatureModel } from 'src/app/core/models/individual-request-signature';
 import { StorageService } from 'src/app/shared/services/storage.service';
 import { AppSettings } from 'src/app/config/app-settings';
+import { IntercomService } from 'src/app/shared/services/intercom.service';
 
 @Component({
   selector: 'app-individual-dashboard',
@@ -28,7 +29,8 @@ export class IndividualDashboardComponent implements OnInit {
     private router: Router,
     private claContributorService: ClaContributorService,
     private alertService: AlertService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private intercomService: IntercomService
   ) {
     this.projectId = this.route.snapshot.paramMap.get('projectId');
     this.userId = this.route.snapshot.paramMap.get('userId');
@@ -80,6 +82,7 @@ export class IndividualDashboardComponent implements OnInit {
         } else {
           this.status = 'Incomplete';
           this.alertService.error('CLA system is not able to support your request. Please contact support via the chat widget.');
+          this.intercomService.show();
         }
       },
       (exception) => {

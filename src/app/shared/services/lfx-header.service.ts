@@ -34,6 +34,9 @@ export class LfxHeaderService {
       },
     ];
     const element: any = document.getElementById('lfx-header-v2');
+    if (!element) {
+      return;
+    }
     element.links = this.links;
   }
 

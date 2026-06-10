@@ -244,6 +244,7 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
               'We\'re sorry, but this organization is flagged by sanctions screening, so the Employee Contributor License Agreement (ECLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
             this.openWithDismiss(this.warningModal);
             this.intercomService.show();
+            return;
           } else if (
             Object.prototype.hasOwnProperty.call(
               response.errors,
@@ -262,7 +263,10 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
               this.projectId +
               '/' +
               this.userId;
+            // Dismiss the advisory "Heads up" warning so it doesn't linger over the new route.
+            this.modalService.dismissAll();
             this.router.navigate([url]);
+            return;
           } else {
             this.alertService.error(response.errors.project_id);
           }

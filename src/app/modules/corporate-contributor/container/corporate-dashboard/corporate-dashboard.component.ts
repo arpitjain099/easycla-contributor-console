@@ -195,7 +195,9 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
           // clean result and blocks (errors.sanctioned, handled below) when it is genuinely
           // flagged. openWithDismiss() dismisses any open modal first, so the live (decisive)
           // result cleanly supersedes this warning.
-          if (this.organization.isSanctioned) {
+          // organization.isSanctioned is typed as a string in the model; normalize so both a
+          // boolean false and a literal "false" are correctly treated as not-flagged.
+          if (String(this.organization.isSanctioned).toLowerCase() === 'true') {
             this.title = 'Sanctions Screening';
             this.message =
               'Heads up: this organization is currently marked as flagged by sanctions screening. We\'ll re-verify in the next step, and if it is still flagged you won\'t be able to acknowledge the ECLA. If you believe this is an error, please contact EasyCLA Support via the chat widget.';

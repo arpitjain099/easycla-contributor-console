@@ -184,19 +184,24 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
       .subscribe(
         (response) => {
           this.organization = response;
-          if(!this.organization.isSanctioned){
           this.storageService.setItem(
             AppSettings.SELECTED_COMPANY,
             this.organization
           );
+          // Do NOT block on the persisted (possibly stale) isSanctioned flag. If the company is
+          // currently marked sanctioned, show a non-blocking WARNING but still proceed to the
+          // decisive step. checkEmployeeSignature() runs the live SSS check
+          // (/v2/check-prepare-employee-signature), which clears a stale sss-origin block on a
+          // clean result and blocks (errors.sanctioned, handled below) when it is genuinely
+          // flagged. openWithDismiss() dismisses any open modal first, so the live (decisive)
+          // result cleanly supersedes this warning.
+          if (this.organization.isSanctioned) {
+            this.message =
+              `Heads up: this organization is currently marked as flagged by sanctions screening. We'll re-verify in the next step, and if it is still flagged you won't be able to acknowledge the ECLA. If you believe this is an error, please contact EasyCLA Support via the chat widget.`;
+            this.openWithDismiss(this.warningModal);
+            this.intercomService.show();
+          }
           this.checkEmployeeSignature();
-        }else {
-          this.message =
-            `We're sorry, you are currently unable to acknowledge the Employee Contributor License Agreement (ECLA) for this organization.
-             If you believe this may be an error, please contact EasyCLA Support via the chat widget.`;
-          this.openWithDismiss(this.warningModal);
-          this.intercomService.show();
-        }
         },
         () => {
           this.storageService.removeItem(AppSettings.SELECTED_COMPANY);
@@ -227,6 +232,17 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
       (response) => {
         if (response.errors) {
           if (
+            Object.prototype.hasOwnProperty.call(response.errors, 'sanctioned')
+          ) {
+            // Authoritative live SSS verdict from check-prepare/request-employee-signature:
+            // the company is currently sanctioned (the persisted flag may have been stale;
+            // this is the live result). Show the dedicated sanctioned message.
+            this.message =
+              response.errors.description ||
+              `We're sorry, but this organization is flagged by sanctions screening, so the Employee Contributor License Agreement (ECLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.`;
+            this.openWithDismiss(this.warningModal);
+            this.intercomService.show();
+          } else if (
             Object.prototype.hasOwnProperty.call(
               response.errors,
               'missing_ccla'
@@ -273,7 +289,28 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
     this.claContributorService
       .postEmployeeSignatureRequest(signatureRequest)
       .subscribe(
-        () => {
+        (response: any) => {
+          // /v2/request-employee-signature can return a legacy HTTP-200 body carrying a
+          // sanctioned block ({code:403, errors:{sanctioned}}) — don't treat every 200 as
+          // success; mirror the precheck handling so a live sanction still blocks here.
+          if (response && response.errors) {
+            if (
+              Object.prototype.hasOwnProperty.call(response.errors, 'sanctioned')
+            ) {
+              this.message =
+                response.errors.description ||
+                `We're sorry, but this organization is flagged by sanctions screening, so the Employee Contributor License Agreement (ECLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.`;
+              this.openWithDismiss(this.warningModal);
+              this.intercomService.show();
+              return;
+            }
+            this.alertService.error(
+              response.errors.project_id ||
+                response.errors.server ||
+                'Unable to complete the ECLA request.'
+            );
+            return;
+          }
           const project: ProjectModel = JSON.parse(
             this.storageService.getItem(AppSettings.PROJECT)
           );

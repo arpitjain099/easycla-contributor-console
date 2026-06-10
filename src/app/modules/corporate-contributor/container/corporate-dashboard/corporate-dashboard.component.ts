@@ -196,8 +196,9 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
           // flagged. openWithDismiss() dismisses any open modal first, so the live (decisive)
           // result cleanly supersedes this warning.
           if (this.organization.isSanctioned) {
+            this.title = 'Sanctions Screening';
             this.message =
-              `Heads up: this organization is currently marked as flagged by sanctions screening. We'll re-verify in the next step, and if it is still flagged you won't be able to acknowledge the ECLA. If you believe this is an error, please contact EasyCLA Support via the chat widget.`;
+              'Heads up: this organization is currently marked as flagged by sanctions screening. We\'ll re-verify in the next step, and if it is still flagged you won\'t be able to acknowledge the ECLA. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
             this.openWithDismiss(this.warningModal);
             this.intercomService.show();
           }
@@ -237,9 +238,10 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
             // Authoritative live SSS verdict from check-prepare/request-employee-signature:
             // the company is currently sanctioned (the persisted flag may have been stale;
             // this is the live result). Show the dedicated sanctioned message.
+            this.title = 'Sanctions Screening';
             this.message =
               response.errors.description ||
-              `We're sorry, but this organization is flagged by sanctions screening, so the Employee Contributor License Agreement (ECLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.`;
+              'We\'re sorry, but this organization is flagged by sanctions screening, so the Employee Contributor License Agreement (ECLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
             this.openWithDismiss(this.warningModal);
             this.intercomService.show();
           } else if (
@@ -297,9 +299,10 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
             if (
               Object.prototype.hasOwnProperty.call(response.errors, 'sanctioned')
             ) {
+              this.title = 'Sanctions Screening';
               this.message =
                 response.errors.description ||
-                `We're sorry, but this organization is flagged by sanctions screening, so the Employee Contributor License Agreement (ECLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.`;
+                'We\'re sorry, but this organization is flagged by sanctions screening, so the Employee Contributor License Agreement (ECLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
               this.openWithDismiss(this.warningModal);
               this.intercomService.show();
               return;

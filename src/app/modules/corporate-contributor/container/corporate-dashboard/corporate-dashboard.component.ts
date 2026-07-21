@@ -189,7 +189,7 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
             this.organization
           );
           // Do NOT block on the persisted (possibly stale) isSanctioned flag. If the company is
-          // currently marked sanctioned, show a non-blocking WARNING but still proceed to the
+          // currently marked for additional trade-compliance review, show a non-blocking WARNING but still proceed to the
           // decisive step. checkEmployeeSignature() runs the live SSS check
           // (/v2/check-prepare-employee-signature), which clears a stale sss-origin block on a
           // clean result and blocks (errors.sanctioned, handled below) when it is genuinely

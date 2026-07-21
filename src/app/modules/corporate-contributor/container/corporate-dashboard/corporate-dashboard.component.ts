@@ -238,11 +238,10 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
             Object.prototype.hasOwnProperty.call(response.errors, 'sanctioned')
           ) {
             // Authoritative live SSS verdict from check-prepare/request-employee-signature:
-            // the company is currently sanctioned (the persisted flag may have been stale;
-            // this is the live result). Show the dedicated sanctioned message.
+            // the company requires additional trade-compliance review (the persisted flag may
+            // have been stale; this is the live result). Show the dedicated compliance message.
             this.title = 'Compliance Review Required';
             this.message =
-              response.errors.description ||
               'We\'re sorry, but this organization requires additional trade compliance review, so the Contributor License Agreement (CLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
             this.openWithDismiss(this.warningModal);
             this.intercomService.show();
@@ -299,15 +298,14 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
       .subscribe(
         (response: any) => {
           // /v2/request-employee-signature can return a legacy HTTP-200 body carrying a
-          // sanctioned block ({code:403, errors:{sanctioned}}) — don't treat every 200 as
-          // success; mirror the precheck handling so a live sanction still blocks here.
+          // compliance block ({code:403, errors:{sanctioned}}) — don't treat every 200 as
+          // success; mirror the precheck handling so a trade-compliance review flag still blocks here.
           if (response && response.errors) {
             if (
               Object.prototype.hasOwnProperty.call(response.errors, 'sanctioned')
             ) {
-              this.title = 'Review Required';
+              this.title = 'Compliance Review Required';
               this.message =
-                response.errors.description ||
                 'We\'re sorry, but this organization requires additional trade compliance review, so the Contributor License Agreement (CLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
               this.openWithDismiss(this.warningModal);
               this.intercomService.show();

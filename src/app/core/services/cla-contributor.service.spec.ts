@@ -66,6 +66,35 @@ describe('ClaContributorService', () => {
             expect(service.getLFXCorporateURL()).toBe(service.corporateV2Base + 'foundation/FOUNDATION_SFID/cla');
         });
 
+        // A foundation-level CLA Group spanning many projects, reached without a repository match.
+        // Previously threw a TypeError, because the foundation-level condition dereferenced the
+        // unmatched (null) project before the null check below it.
+        it('redirects to the foundation CLA page when signed at foundation level and the repository is unmatched', () => {
+            givenStoredState({
+                projects: [
+                    sfProject('SUB_PROJECT_SFID', [repo('org/sub')]),
+                    sfProject('FOUNDATION_SFID')
+                ],
+                signed_at_foundation_level: true
+            }, 'https://app.lfx.dev/profile/clas');
+
+            expect(service.getLFXCorporateURL()).toBe(service.corporateV2Base + 'foundation/FOUNDATION_SFID/cla');
+        });
+
+        // The flag is authoritative on its own: the backend computes it by checking whether the
+        // foundation has a CLA Group entry of its own, so a matched sub-project does not override it.
+        it('redirects to the foundation CLA page when signed at foundation level even if the repository matches a sub-project', () => {
+            givenStoredState({
+                projects: [
+                    sfProject('SUB_PROJECT_SFID', [repo('org/repo')]),
+                    sfProject('FOUNDATION_SFID')
+                ],
+                signed_at_foundation_level: true
+            }, 'https://github.com/org/repo/pull/1');
+
+            expect(service.getLFXCorporateURL()).toBe(service.corporateV2Base + 'foundation/FOUNDATION_SFID/cla');
+        });
+
         it('redirects to the project matching the repository the contributor came from', () => {
             givenStoredState({
                 projects: [

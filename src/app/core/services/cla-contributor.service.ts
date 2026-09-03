@@ -227,8 +227,13 @@ export class ClaContributorService {
     }
 
     // Signed at foundation level - the CLA lives on the foundation, not on an individual project.
-    if (claGroupModel.signed_at_foundation_level) {
-      return this.corporateV2Base + 'foundation/' + projectDetails[0].foundation_sfid + '/cla';
+    // Derive this from the CLA Group's own mappings rather than signed_at_foundation_level: the
+    // backend computes that flag per *foundation* (SignedAtFoundationLevel queries every CLA Group
+    // sharing the foundation SFID), so a child CLA Group inherits true whenever any sibling under
+    // the same foundation is foundation-level. projectDetails is scoped to this CLA Group alone.
+    const foundationEntry = projectDetails.find((p) => p.project_sfid === claGroupModel.foundation_sfid);
+    if (foundationEntry) {
+      return this.corporateV2Base + 'foundation/' + foundationEntry.foundation_sfid + '/cla';
     }
 
     // Pick the SF Project matching the repository the contributor came from. This only resolves

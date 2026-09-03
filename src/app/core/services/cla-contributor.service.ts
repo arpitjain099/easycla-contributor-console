@@ -215,34 +215,40 @@ export class ClaContributorService {
   }
 
   getLFXCorporateURL(): string {
-    let url = '';
     // Load the CLA Group models from local storage - should only be 1 CLA Group
     const claGroupModel: ProjectModel = JSON.parse(this.storageService.getItem(AppSettings.PROJECT));
     // We may have zero or more SF Projects attached to this CLA Group
     const projectDetails = claGroupModel.projects;
-    // TODO: figure out the github repository that was used to come here...
-    // pick the matching SF Project based on the repository name, instead of just using the first project in the list
-
-    const project = this.getProjectFromRepo(projectDetails);
-    console.log('project: ', project);
 
     // No SF Projects for this CLA Group
     if (projectDetails.length === 0) {
       // No SFID associated with project so redirect at corporate console dashboard.
-      url = this.corporateV2Base + 'company/dashboard';
-    } else if (claGroupModel.signed_at_foundation_level && claGroupModel.foundation_sfid === project.project_sfid) {
-      // Signed at foundation level.
-      url = this.corporateV2Base + 'foundation/' + projectDetails[0].foundation_sfid + '/cla';
-    } else {
-      if (project !== null) {
-        // For standalone project we must redirect to the SFID of The Linux Foundation
-        url = this.corporateV2Base + 'foundation/' + project.foundation_sfid + '/project/' + project.project_sfid + '/cla';
-      } else {
-        this.alertService.error('Unable to find project by repository, please contact to your administrator.');
-      }
+      return this.corporateV2Base + 'company/dashboard';
     }
 
-    return url;
+    // Signed at foundation level - the CLA lives on the foundation, not on an individual project.
+    // Derive this from the CLA Group's own mappings rather than signed_at_foundation_level: the
+    // backend computes that flag per *foundation* (SignedAtFoundationLevel queries every CLA Group
+    // sharing the foundation SFID), so a child CLA Group inherits true whenever any sibling under
+    // the same foundation is foundation-level. projectDetails is scoped to this CLA Group alone.
+    const foundationEntry = projectDetails.find((p) => p.project_sfid === claGroupModel.foundation_sfid);
+    if (foundationEntry) {
+      return this.corporateV2Base + 'foundation/' + foundationEntry.foundation_sfid + '/cla';
+    }
+
+    // Pick the SF Project matching the repository the contributor came from. This only resolves
+    // when the stored redirect is a repository URL, i.e. when arriving from a PR/MR check.
+    // Contributors arriving from LFX Self Serve carry a console URL instead, which never matches.
+    const project = this.getProjectFromRepo(projectDetails) || (projectDetails.length === 1 ? projectDetails[0] : null);
+    if (project !== null) {
+      // For standalone project we must redirect to the SFID of The Linux Foundation
+      return this.corporateV2Base + 'foundation/' + project.foundation_sfid + '/project/' + project.project_sfid + '/cla';
+    }
+
+    // The repository could not be matched against any of this CLA Group's projects and the CLA
+    // Group spans several of them, so there is no single project page to land on. Fall back to
+    // the company dashboard rather than leaving the contributor with no way forward.
+    return this.corporateV2Base + 'company/dashboard';
   }
 
   getProjectFromRepo(projects: Project[]) {

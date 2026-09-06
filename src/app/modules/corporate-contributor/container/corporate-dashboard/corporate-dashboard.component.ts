@@ -184,19 +184,27 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
       .subscribe(
         (response) => {
           this.organization = response;
-          if(!this.organization.isSanctioned){
           this.storageService.setItem(
             AppSettings.SELECTED_COMPANY,
             this.organization
           );
+          // Do NOT block on the persisted (possibly stale) isSanctioned flag. If the company is
+          // currently marked for additional trade-compliance review, show a non-blocking WARNING but still proceed to the
+          // decisive step. checkEmployeeSignature() runs the live SSS check
+          // (/v2/check-prepare-employee-signature), which clears a stale sss-origin block on a
+          // clean result and blocks (errors.sanctioned, handled below) when it is genuinely
+          // flagged. openWithDismiss() dismisses any open modal first, so the live (decisive)
+          // result cleanly supersedes this warning.
+          // organization.isSanctioned is typed as a string in the model; normalize so both a
+          // boolean false and a literal "false" are correctly treated as not-flagged.
+          if (String(this.organization.isSanctioned).toLowerCase() === 'true') {
+            this.title = 'Compliance Review Required';
+            this.message =
+              'Heads up: this organization currently requires additional trade compliance screening review. We\'ll re-verify in the next step, and if it is still flagged you won\'t be able to acknowledge the CLA. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
+            this.openWithDismiss(this.warningModal);
+            this.intercomService.show();
+          }
           this.checkEmployeeSignature();
-        }else {
-          this.message =
-            `We're sorry, you are currently unable to acknowledge the Employee Contributor License Agreement (ECLA) for this organization.
-             If you believe this may be an error, please contact EasyCLA Support via the chat widget.`;
-          this.openWithDismiss(this.warningModal);
-          this.intercomService.show();
-        }
         },
         () => {
           this.storageService.removeItem(AppSettings.SELECTED_COMPANY);
@@ -227,6 +235,18 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
       (response) => {
         if (response.errors) {
           if (
+            Object.prototype.hasOwnProperty.call(response.errors, 'sanctioned')
+          ) {
+            // Authoritative live SSS verdict from check-prepare/request-employee-signature:
+            // the company requires additional trade-compliance review (the persisted flag may
+            // have been stale; this is the live result). Show the dedicated compliance message.
+            this.title = 'Compliance Review Required';
+            this.message =
+              'We\'re sorry, but this organization requires additional trade compliance review, so the Contributor License Agreement (CLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
+            this.openWithDismiss(this.warningModal);
+            this.intercomService.show();
+            return;
+          } else if (
             Object.prototype.hasOwnProperty.call(
               response.errors,
               'missing_ccla'
@@ -244,7 +264,10 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
               this.projectId +
               '/' +
               this.userId;
+            // Dismiss the advisory "Heads up" warning so it doesn't linger over the new route.
+            this.modalService.dismissAll();
             this.router.navigate([url]);
+            return;
           } else {
             this.alertService.error(response.errors.project_id);
           }
@@ -273,7 +296,28 @@ export class CorporateDashboardComponent implements OnInit, OnDestroy {
     this.claContributorService
       .postEmployeeSignatureRequest(signatureRequest)
       .subscribe(
-        () => {
+        (response: any) => {
+          // /v2/request-employee-signature can return a legacy HTTP-200 body carrying a
+          // compliance block ({code:403, errors:{sanctioned}}) — don't treat every 200 as
+          // success; mirror the precheck handling so a trade-compliance review flag still blocks here.
+          if (response && response.errors) {
+            if (
+              Object.prototype.hasOwnProperty.call(response.errors, 'sanctioned')
+            ) {
+              this.title = 'Compliance Review Required';
+              this.message =
+                'We\'re sorry, but this organization requires additional trade compliance review, so the Contributor License Agreement (CLA) cannot be completed at this time. If you believe this is an error, please contact EasyCLA Support via the chat widget.';
+              this.openWithDismiss(this.warningModal);
+              this.intercomService.show();
+              return;
+            }
+            this.alertService.error(
+              response.errors.project_id ||
+                response.errors.server ||
+                'Unable to complete the CLA request.'
+            );
+            return;
+          }
           const project: ProjectModel = JSON.parse(
             this.storageService.getItem(AppSettings.PROJECT)
           );
